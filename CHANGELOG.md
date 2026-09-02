@@ -2,6 +2,34 @@
 
 Формат по [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/), версии по [SemVer](https://semver.org/lang/ru/).
 
+## [1.0.1]
+
+### Исправлено / Fixed
+
+- Сборка снова компилируется: метод выброса предмета в маппинге 1.12.2 называется `dropItem(boolean)` — имя `dropOneItem` осталось от маппингов эпохи 1.8.
+  *The build compiles again: the drop method in the 1.12.2 mapping is `dropItem(boolean)` — `dropOneItem` was a 1.8-era mapping name.*
+- Клики по собственным окнам мода и по окну чата больше не записываются как игровые GUI-клики и не могут быть «проиграны» в такие окна при повторе — теперь действует тот же фильтр, что и у клавиш.
+  *Clicks in the mod's own windows and the chat window are no longer recorded as GUI clicks and cannot be replayed into them — same filter as keyboard input.*
+- Достижение лимита 72 000 кадров теперь останавливает запись с сообщением в чат (раньше — молча, только звук остановки).
+  *Hitting the 72 000-frame limit now stops the recording with a chat message instead of stopping silently.*
+- Повтор больше не зависает навсегда, если ввод не применяется к игроку (например, спектатор за другой сущностью): через полсекунды мод сам останавливает повтор с сообщением.
+  *Playback no longer hangs forever when input cannot reach the player (e.g. spectating another entity): it stops itself with a message after half a second.*
+- Дубликат слота получает имя «<имя> (копия)» вместо точной копии имени — в списке больше нет неотличимых близнецов; при копии копии пометка не накапливается.
+  *Duplicating a slot names the copy "<name> (copy)" instead of cloning the name; copying a copy does not stack the suffix.*
+- Очередь клавиш окон при переполнении отклоняет новое событие — так же, как очередь кликов, — а не выбрасывает старейшее: порядок уже стоящих событий не ломается.
+  *The GUI key queue now rejects new events on overflow like the click queue instead of dropping the oldest one.*
+- `getSlotStartDelay` для слота без сохранённых настроек возвращает текущую задержку, а не жёсткую «3»: пустой слот не подменяет настройки.
+  *`getSlotStartDelay` now falls back to the current delay instead of a hardcoded 3 for slots without saved settings.*
+- Убран мёртвый код (всегда нулевые смещения опоры вращения, недостижимая интерполяция `viewBlend`, неиспользуемый `carryMask`, пустые `cycleD*`) — поведение не изменилось, код стал честнее.
+  *Dead code removed (always-zero rotation offsets, unreachable `viewBlend` interpolation, unused `carryMask`, empty `cycleD*`) with no behavior change.*
+
+### Изменено / Changed
+
+- Версия ForgeGradle зафиксирована на `3.0.197` вместо плавающего `3.+` — сборка воспроизводима и не зависит от будущих релизов 3.x.
+  *ForgeGradle pinned to `3.0.197` instead of the floating `3.+` so builds stay reproducible.*
+- Добавлен `.gitignore` (build/run/.gradle/IDE-файлы); лицензия теперь в одном файле `LICENSE.txt`.
+  *Added a `.gitignore` (build/run/.gradle/IDE files); the license is now a single `LICENSE.txt` file.*
+
 ## [1.0.0]
 
 ### Безопасность / Security

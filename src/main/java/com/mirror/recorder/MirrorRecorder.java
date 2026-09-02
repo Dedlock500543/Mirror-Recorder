@@ -16,7 +16,7 @@ import org.lwjgl.input.Keyboard;
 
 @Mod(modid=MirrorRecorder.MOD_ID,name=MirrorRecorder.MOD_NAME,version=MirrorRecorder.VERSION,clientSideOnly=true,acceptedMinecraftVersions="[1.12.2]")
 public class MirrorRecorder {
-    public static final String MOD_ID="mirror_recorder",MOD_NAME="Mirror Recorder",VERSION="1.0.0";
+    public static final String MOD_ID="mirror_recorder",MOD_NAME="Mirror Recorder",VERSION="1.0.1";
     @Mod.Instance(MOD_ID) public static MirrorRecorder instance;
     private RecorderConfig config; private StorageManager storage; private RecorderManager manager; private BaritoneReturnController returnController;
     private KeyBinding keyRecord,keyPlay,keyLoop,keyStop,keyGui;

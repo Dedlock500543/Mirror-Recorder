@@ -28,11 +28,13 @@ public class RecordingHandler {
     private volatile String pendingChatMessage=null;
     private boolean keysNeedReset=false;
     private static final int CHAT_QUEUE_LIMIT=256,GUI_CLICK_TTL=40,GUI_QUEUE_LIMIT=64;
-    private int viewBlend=0;
+    /** Сколько тиков повтор может стоять на месте без применённого ввода, прежде чем остановиться самому. */
+    private static final int STALL_LIMIT=10;
+    private int stallTicks=0;
     private long rotRun=-1L;private int rotFrame=-1;private float lookDYaw=0f,lookDPitch=0f,savedLookYaw=0f,savedLookPitch=0f,savedPrevLookYaw=0f,savedPrevLookPitch=0f;private boolean lookRenderPushed=false;
     private long appliedRun=-1L,blendRun=-1L;
-    /** Опора вращения на прогон: смещение между стартовым углом игрока и первым кадром. Позволяет чинить накопленную ошибку, не ломая независимость от стартового направления. */
-    private long rotAnchorRun=-1L;private double rotYawOffset=0d,rotPitchOffset=0d;private boolean rotAnchorSet=false;private static final float MAX_ROT_CORRECTION=10.0f;
+    /** Опора вращения на прогон: при старте повтора камера ставится на записанный стартовый угол, дальше повтор идёт по дельтам с плавным доворотом к записанному углу (не более MAX_ROT_CORRECTION за тик). */
+    private long rotAnchorRun=-1L;private boolean rotAnchorSet=false;private static final float MAX_ROT_CORRECTION=10.0f;
     private final java.util.ArrayDeque<String> chatQueue=new java.util.ArrayDeque<String>();
     /** Записанные сообщения отправляются по одному: залп в один тик ведёт к кику за флуд. */
     private long lastChatSentAt=0L;private static final long CHAT_SEND_INTERVAL_MS=1200L;
@@ -73,20 +75,20 @@ public class RecordingHandler {
         if(rotRun==run&&rotFrame==index)return;
         rotRun=run;rotFrame=index;
         float carryYaw=manager.consumeCarryYaw(),carryPitch=manager.consumeCarryPitch();
-        if(blendRun!=run){blendRun=run;viewBlend=0;guiQueue.clear();}
-        if(rotAnchorRun!=run){rotAnchorRun=run;rotAnchorSet=false;if(frame.hasKeyMask&&config.isApplyRotation()){rotYawOffset=0d;rotPitchOffset=0d;float baseYaw=frame.yaw-frame.dYaw,basePitch=MathHelper.clamp(frame.pitch-frame.dPitch,-90.0f,90.0f);player.rotationYaw=baseYaw;player.rotationPitch=basePitch;player.prevRotationYaw=baseYaw;player.prevRotationPitch=basePitch;player.rotationYawHead=baseYaw;rotAnchorSet=true;}}
+        if(blendRun!=run){blendRun=run;guiQueue.clear();}
+        if(rotAnchorRun!=run){rotAnchorRun=run;rotAnchorSet=false;if(frame.hasKeyMask&&config.isApplyRotation()){float baseYaw=frame.yaw-frame.dYaw,basePitch=MathHelper.clamp(frame.pitch-frame.dPitch,-90.0f,90.0f);player.rotationYaw=baseYaw;player.rotationPitch=basePitch;player.prevRotationYaw=baseYaw;player.prevRotationPitch=basePitch;player.rotationYawHead=baseYaw;rotAnchorSet=true;}}
         if(!config.isApplyRotation()){lookDYaw=0f;lookDPitch=0f;return;}
         float targetYaw,targetPitch;
         if(frame.hasKeyMask){
             float stepYaw=player.rotationYaw+carryYaw+frame.dYaw,stepPitch=player.rotationPitch+carryPitch+frame.dPitch;
+            // Доворот к записанному абсолютному углу, но не более MAX_ROT_CORRECTION градусов за тик: накопленная ошибка дельт гасится плавно, без рывков камеры.
             if(rotAnchorSet){
-                stepYaw+=MathHelper.clamp(MathHelper.wrapDegrees((float)((double)frame.yaw+rotYawOffset)-stepYaw),-MAX_ROT_CORRECTION,MAX_ROT_CORRECTION);
-                stepPitch+=MathHelper.clamp((float)((double)frame.pitch+rotPitchOffset)-stepPitch,-MAX_ROT_CORRECTION,MAX_ROT_CORRECTION);
+                stepYaw+=MathHelper.clamp(MathHelper.wrapDegrees(frame.yaw-stepYaw),-MAX_ROT_CORRECTION,MAX_ROT_CORRECTION);
+                stepPitch+=MathHelper.clamp(frame.pitch-stepPitch,-MAX_ROT_CORRECTION,MAX_ROT_CORRECTION);
             }
-            targetYaw=stepYaw;targetPitch=MathHelper.clamp(stepPitch,-90.0f,90.0f);viewBlend=0;
+            targetYaw=stepYaw;targetPitch=MathHelper.clamp(stepPitch,-90.0f,90.0f);
         }
         else{targetYaw=frame.yaw;targetPitch=MathHelper.clamp(frame.pitch,-90.0f,90.0f);}
-        if(viewBlend>0){float step=1.0f/viewBlend;targetYaw=player.rotationYaw+MathHelper.wrapDegrees(targetYaw-player.rotationYaw)*step;targetPitch=player.rotationPitch+(targetPitch-player.rotationPitch)*step;viewBlend--;}
         lookDYaw=MathHelper.wrapDegrees(targetYaw-player.rotationYaw);
         lookDPitch=MathHelper.clamp(targetPitch,-90.0f,90.0f)-player.rotationPitch;
         player.rotationYaw=player.rotationYaw+lookDYaw;
@@ -153,6 +155,8 @@ public class RecordingHandler {
         int failedSlot=manager.consumeUnsavedWarningSlot();if(failedSlot>0)SoundFx.error();
         if(failedSlot>0)sendMsg(L("\u00a7c\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f: \u0441\u043b\u043e\u0442 ","§cSave error: slot ","§cПомилка збереження: слот ","§cSpeicherfehler: Slot ","§cBłąd zapisu: slot ")+failedSlot+L(" \u043e\u0441\u0442\u0430\u043b\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u043f\u0430\u043c\u044f\u0442\u0438. \u041d\u0435 \u0437\u0430\u043a\u0440\u044b\u0432\u0430\u0439\u0442\u0435 \u0438\u0433\u0440\u0443."," is kept only in memory. Do not close the game."," залишився лише в пам'яті. Не закривайте гру."," ist nur noch im Speicher. Schließe das Spiel nicht."," pozostał tylko w pamięci. Nie zamykaj gry."));
         boolean nowRec=manager.isRecording(),nowPlay=manager.isPlaying();
+        int limitSlot=manager.consumeLimitReachedSlot();
+        if(limitSlot>0)sendMsg(L("§eЗапись остановлена: достигнут лимит ","§eRecording stopped: the frame limit of ","§eЗапис зупинено: досягнуто ліміт ","§eAufnahme gestoppt: das Limit von ","§eNagranie zatrzymane: osiągnięto limit ")+com.mirror.recorder.storage.StorageManager.MAX_FRAMES+L(" кадров (1 час). Слот сохранён."," frames (1 hour) was reached. The slot is saved."," кадрів (1 годину). Слот збережено."," Frames (1 Stunde) wurde erreicht. Der Slot ist gespeichert."," klatek (1 godzina) został osiągnięty. Slot został zapisany."));
         if(nowRec&&!sndRec)SoundFx.recordStart();
         if(!nowRec&&sndRec)SoundFx.recordStop();
         if(nowPlay&&!sndPlay){SoundFx.playStart();sndCycle=manager.getPlaybackCycle();}
@@ -214,12 +218,12 @@ public class RecordingHandler {
         // A held-state bit cannot distinguish a hold from another press on the next tick. The explicit mouse events can.
         boolean attackPress=frame.leftClick||rising(mask,Frame.K_ATTACK),usePress=frame.rightClick||rising(mask,Frame.K_USE);
         int attackShots=frame.attackClicks>0?frame.attackClicks:(attackPress?1:0),useShots=frame.useClicks>0?frame.useClicks:(usePress?1:0);
-        if(current)manager.consumeCarryMask();
+        // Маска пропущенных кадров не нужна: их события доставляются по порядку через consumeSkippedFrames.
         applyHotbar(frame.hotbarSlot);
         // При открытом окне ваниль не читает хоткеи: накопленное нажатие выстреливало после закрытия окна (фантомный дроп/инвентарь). Действия окна повторяются через guiKeys, мировые клавиши — только когда окна нет ни в записи, ни сейчас.
         boolean guiKeyCtx=frame.guiKeys.length>0||(frame.hasScreenState&&frame.openScreen!=null),hasGuiClose=false;
         for(int i=0;i+6<=frame.guiKeys.length;i+=6)if(frame.guiKeys[i]==GA_CLOSE){hasGuiClose=true;break;}
-        if(mc.currentScreen==null&&!guiKeyCtx){if((mask&Frame.K_DROP)!=0&&(lastMask&Frame.K_DROP)==0&&mc.player!=null&&!mc.player.isSpectator())mc.player.dropOneItem(frame.dropAll);pulse(mc.gameSettings.keyBindSwapHands,(mask&Frame.K_SWAP)!=0,(lastMask&Frame.K_SWAP)!=0);pulse(mc.gameSettings.keyBindPickBlock,(mask&Frame.K_PICK)!=0,(lastMask&Frame.K_PICK)!=0);}
+        if(mc.currentScreen==null&&!guiKeyCtx){if((mask&Frame.K_DROP)!=0&&(lastMask&Frame.K_DROP)==0&&mc.player!=null&&!mc.player.isSpectator())mc.player.dropItem(frame.dropAll);pulse(mc.gameSettings.keyBindSwapHands,(mask&Frame.K_SWAP)!=0,(lastMask&Frame.K_SWAP)!=0);pulse(mc.gameSettings.keyBindPickBlock,(mask&Frame.K_PICK)!=0,(lastMask&Frame.K_PICK)!=0);}
         if(mc.currentScreen==null&&!hasGuiClose)pulse(mc.gameSettings.keyBindInventory,(mask&Frame.K_INVENTORY)!=0,(lastMask&Frame.K_INVENTORY)!=0);
         boolean guiFrame=frame.guiClick&&frame.guiScreen!=null&&!frame.guiScreen.isEmpty();
         if(guiFrame){
@@ -292,7 +296,8 @@ public class RecordingHandler {
         catch(Exception e){warnClickFailure("Recorded GUI release failed",e);}
     }
     private void queueGuiKeys(Frame frame){
-        if(guiKeyQueue.size()>=GUI_KEY_LIMIT)guiKeyQueue.poll();
+        // Как и в очереди кликов: при переполнении теряем новое событие, а не старейшее — порядок уже стоящих не ломается.
+        if(guiKeyQueue.size()>=GUI_KEY_LIMIT){MirrorDebug.log("GUI","key queue overflow, dropped key event for "+frame.openScreen);return;}
         guiKeyQueue.add(new GuiKeyEvent(frame.openScreen,frame.guiKeys));
     }
     private void processGuiKeyQueue(){
@@ -480,7 +485,15 @@ public class RecordingHandler {
     private String openScreenName(){GuiScreen s=mc.currentScreen;if(s==null)return null;String n=s.getClass().getName();return n.startsWith("com.mirror.recorder.gui.")?null:n;}
     private void handlePlayback(EntityPlayerSP player){
         if(config.isStopOnMove()&&manager.getSimulateCooldown()<=0&&isRealMovement()){MirrorDebug.log("PLAYBACK","STOP: manual movement detected at frame "+manager.getCurrentFrameIndex()+" (run "+manager.getPlaybackRunId()+")");MirrorDebug.csvClose();resetPlayback();manager.stopPlayback();SoundFx.stop();sendMsg(L("\u00a7e\u0412\u043e\u0441\u043f\u0440\u043e\u0438\u0437\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u043e\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u043e: \u043e\u0431\u043d\u0430\u0440\u0443\u0436\u0435\u043d\u043e \u0440\u0443\u0447\u043d\u043e\u0435 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435.","§ePlayback stopped: manual movement detected.","§eВідтворення зупинено: виявлено ручний рух.","§eWiedergabe gestoppt: manuelle Bewegung erkannt.","§eOdtwarzanie zatrzymane: wykryto ręczny ruch."));return;}
-        long run=manager.getPlaybackRunId();int frameIndex=manager.getCurrentFrameIndex();if(appliedRun!=run||appliedFrame!=frameIndex)return;appliedRun=-1L;appliedFrame=-1;
+        long run=manager.getPlaybackRunId();int frameIndex=manager.getCurrentFrameIndex();
+        if(appliedRun!=run||appliedFrame!=frameIndex){
+            // Ввод не применяется к игроку (например, спектатор за другой сущностью: InputUpdateEvent не приходит).
+            // Короткие расхождения терпимы, но вечно висящий повтор — баг: через полсекунды честно останавливаем.
+            if(++stallTicks>=STALL_LIMIT){stallTicks=0;MirrorDebug.log("PLAYBACK","STOP: player input not applied for "+STALL_LIMIT+" ticks at frame "+frameIndex);resetPlayback();manager.stopPlayback();SoundFx.stop();sendMsg(L("§eПовтор остановлен: управление не применяется к игроку (например, наблюдение за другой сущностью).","§ePlayback stopped: input is not reaching the player (e.g. spectating another entity).","§eВідтворення зупинено: керування не застосовується до гравця (наприклад, спостереження за іншою сутністю).","§eWiedergabe gestoppt: Die Eingabe erreicht den Spieler nicht (z. B. Beobachten einer anderen Entität).","§eOdtwarzanie zatrzymane: sterowanie nie dociera do gracza (np. obserwacja innej istoty)."));}
+            return;
+        }
+        stallTicks=0;
+        appliedRun=-1L;appliedFrame=-1;
         if(!chatQueue.isEmpty()){long nowMs=System.currentTimeMillis();if(nowMs-lastChatSentAt>=CHAT_SEND_INTERVAL_MS){String msg=chatQueue.poll();if(msg!=null&&!msg.isEmpty()){player.sendChatMessage(msg);lastChatSentAt=nowMs;}}}
         if(!manager.advancePlayback()){SoundFx.finish();resetPlayback();}
     }
@@ -492,6 +505,7 @@ public class RecordingHandler {
     }
     private void resetPlayback(){forceResetKeys();}
     private void forceResetKeys(){
+        stallTicks=0;
         if(mc.gameSettings!=null){restorePhysical(mc.gameSettings.keyBindAttack);restorePhysical(mc.gameSettings.keyBindUseItem);if(mc.gameSettings.keyBindsHotbar!=null)for(KeyBinding h:mc.gameSettings.keyBindsHotbar)drainPressQueue(h);drainPressQueue(mc.gameSettings.keyBindDrop);drainPressQueue(mc.gameSettings.keyBindSwapHands);drainPressQueue(mc.gameSettings.keyBindPickBlock);drainPressQueue(mc.gameSettings.keyBindInventory);}if(mc.player!=null)mc.player.setSprinting(false);wantSprint=false;sprintAssist=false;chatQueue.clear();lastChatSentAt=0L;appliedRun=-1L;appliedFrame=-1;interactionRun=-1L;interactionFrame=-1;guiQueue.clear();lastHotbar=-1;heldAttack=false;heldUse=false;lastMask=0;rotRun=-1L;rotFrame=-1;lookDYaw=0f;lookDPitch=0f;popInterpolatedLook();recRotInit=false;pendingChatMessage=null;pendingGuiClick=false;pendingGuiCenter=false;pendingGuiScreen=null;importedChatWarned=false;resetStabilizer();keysNeedReset=false;useHoldFallbackDelay=0;wantSprint=false;useTimerAlign=false;maskRun=-1L;screenMismatchTicks=0;pendingGuiShift=false;guiKeyQueue.clear();pendingGuiKeys.clear();pendingGuiButton=0;worldResetPending=false;worldSuspendTicks=0;
     }
     /** Clears presses buffered inside a KeyBinding: every isPressed() call consumes one. The guard prevents an endless loop if the counter never drains. */
@@ -504,7 +518,9 @@ public class RecordingHandler {
     @SubscribeEvent public void onMouseInput(InputEvent.MouseInputEvent event){
         if(!manager.isRecording()||mc.currentScreen!=null||!Mouse.getEventButtonState())return;int btn=Mouse.getEventButton();pendingGuiClick=false;pendingGuiCenter=false;pendingGuiShift=false;pendingGuiScreen=null;pendingGuiButton=0;if(btn==0)manager.addLeftClick();else if(btn==1)manager.addRightClick();
     }
-    @SubscribeEvent public void onGuiMouseInput(GuiScreenEvent.MouseInputEvent.Pre event){if(!manager.isRecording()||!Mouse.getEventButtonState())return;GuiScreen screen=event.getGui();if(screen==null||!replayableScreen(screen.getClass().getName()))return;int btn=Mouse.getEventButton();if(btn<0||btn>2)return;pendingGuiButton=btn;pendingGuiClick=true;pendingGuiX=MathHelper.clamp((float)Mouse.getEventX()/Math.max(1,mc.displayWidth),0f,1f);pendingGuiY=MathHelper.clamp(1f-(float)Mouse.getEventY()/Math.max(1,mc.displayHeight),0f,1f);int gw=Math.max(1,screen.width),gh=Math.max(1,screen.height);pendingGuiCX=Math.round(pendingGuiX*gw)-gw/2;pendingGuiCY=Math.round(pendingGuiY*gh)-gh/2;pendingGuiCenter=true;pendingGuiShift=GuiScreen.isShiftKeyDown();pendingGuiScreen=screen.getClass().getName();if(btn==0)manager.setLeftClickState(true);else if(btn==1)manager.setRightClickState(true);}
+    @SubscribeEvent public void onGuiMouseInput(GuiScreenEvent.MouseInputEvent.Pre event){if(!manager.isRecording()||!Mouse.getEventButtonState())return;GuiScreen screen=event.getGui();if(screen==null)return;String name=screen.getClass().getName();
+        // Тот же фильтр, что у клавиш: собственные окна мода и окно чата в запись не попадают — их клики не должны повторяться.
+        if(!replayableScreen(name)||name.startsWith("com.mirror.recorder.gui.")||screen instanceof net.minecraft.client.gui.GuiChat)return;int btn=Mouse.getEventButton();if(btn<0||btn>2)return;pendingGuiButton=btn;pendingGuiClick=true;pendingGuiX=MathHelper.clamp((float)Mouse.getEventX()/Math.max(1,mc.displayWidth),0f,1f);pendingGuiY=MathHelper.clamp(1f-(float)Mouse.getEventY()/Math.max(1,mc.displayHeight),0f,1f);int gw=Math.max(1,screen.width),gh=Math.max(1,screen.height);pendingGuiCX=Math.round(pendingGuiX*gw)-gw/2;pendingGuiCY=Math.round(pendingGuiY*gh)-gh/2;pendingGuiCenter=true;pendingGuiShift=GuiScreen.isShiftKeyDown();pendingGuiScreen=name;if(btn==0)manager.setLeftClickState(true);else if(btn==1)manager.setRightClickState(true);}
 
     /** Клавиши в чужих окнах: классифицируем сразу (действие слота, закрытие, печать), чтобы повтор не зависел от текущих привязок клавиш. Чат и окна мода не пишем. */
     @SubscribeEvent public void onGuiKeyInput(GuiScreenEvent.KeyboardInputEvent.Pre event){

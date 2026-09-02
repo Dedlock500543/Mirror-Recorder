@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.0.197'
     }
 }
 
@@ -17,7 +17,7 @@ apply plugin: 'maven-publish'
 //   1. this file
 //   2. src/main/resources/mcmod.info                          -> "version"
 //   3. src/main/java/com/mirror/recorder/MirrorRecorder.java  -> VERSION
-version = '1.0.0'
+version = '1.0.1'
 group = 'com.mirror.recorder'
 archivesBaseName = 'Mirror-Recorder-1.12.2'
 
@@ -64,7 +64,7 @@ dependencies {
 
 jar {
     // Archive name is derived from archivesBaseName + version:
-    //   Mirror-Recorder-1.12.2-1.0.0.jar
+    //   Mirror-Recorder-1.12.2-1.0.1.jar
     manifest {
         attributes([
             "Specification-Title": "Mirror Recorder",

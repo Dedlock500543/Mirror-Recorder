@@ -30,7 +30,7 @@ English version: [README_EN.md](README_EN.md)
 ## Установка
 
 1. Установите Minecraft Forge для 1.12.2.
-2. Положите `Mirror-Recorder-1.12.2-1.0.0.jar` в папку `mods` вашего игрового каталога.
+2. Положите `Mirror-Recorder-1.12.2-1.0.1.jar` в папку `mods` вашего игрового каталога.
 3. Запустите игру.
 
 Пути ниже указаны относительно **вашего** игрового каталога (`.minecraft` или каталог инстанса
@@ -97,7 +97,7 @@ export JAVA_HOME=<path-to-your-jdk8>
 ./gradlew --no-daemon build
 ```
 
-Результат: `build/libs/Mirror-Recorder-1.12.2-1.0.0.jar` (уже реобфусцированный, `jar.finalizedBy('reobfJar')`).
+Результат: `build/libs/Mirror-Recorder-1.12.2-1.0.1.jar` (уже реобфусцированный, `jar.finalizedBy('reobfJar')`).
 
 Запуск клиента для проверки: `gradlew runClient` (рабочий каталог `run/`).
 Сводка окружения сборки: `gradlew modInfo`.

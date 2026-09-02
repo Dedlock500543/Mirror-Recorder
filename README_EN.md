@@ -30,7 +30,7 @@ so playback stays consistent with the game mechanics.
 ## Installation
 
 1. Install Minecraft Forge for 1.12.2.
-2. Put `Mirror-Recorder-1.12.2-1.0.0.jar` into the `mods` folder of your game directory.
+2. Put `Mirror-Recorder-1.12.2-1.0.1.jar` into the `mods` folder of your game directory.
 3. Launch the game.
 
 The paths below are relative to **your** game directory (`.minecraft` or the instance folder
@@ -98,7 +98,7 @@ export JAVA_HOME=<path-to-your-jdk8>
 ./gradlew --no-daemon build
 ```
 
-Result: `build/libs/Mirror-Recorder-1.12.2-1.0.0.jar` (already reobfuscated, `jar.finalizedBy('reobfJar')`).
+Result: `build/libs/Mirror-Recorder-1.12.2-1.0.1.jar` (already reobfuscated, `jar.finalizedBy('reobfJar')`).
 
 Run the client for testing: `gradlew runClient` (working directory `run/`).
 Build environment summary: `gradlew modInfo`.

@@ -1,0 +1,24 @@
+# Gradle / ForgeGradle
+.gradle/
+build/
+jars/
+
+# Тестовый клиент, создаваемый `gradlew runClient`
+run/
+
+# Файлы IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Логи и мусор ОС
+logs/
+*.log
+Thumbs.db
+.DS_Store

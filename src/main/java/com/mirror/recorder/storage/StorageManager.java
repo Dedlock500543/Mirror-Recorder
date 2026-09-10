@@ -81,10 +81,12 @@ public class StorageManager{
     private boolean wasSessionTracked(String key){return sessionTrash.contains(key);}
     /** Лучшая доступная копия слота для архивации в корзину: предпочитаем .bak (целое предыдущее поколение), затем .nbt. */
     private NBTTagCompound bestRootForBackup(int slot){
-        NBTTagCompound n=tryRead(nbtFile(slot));if(n!=null&&validStructure(n)&&decodeRoot(n)!=null&&lastSkippedFrames==0)return n;
-        NBTTagCompound b=tryRead(bakFile(slot));if(b!=null&&validStructure(b)&&decodeRoot(b)!=null&&lastSkippedFrames==0)return b;
-        List<Frame> nFrames=n!=null?decodeRoot(n):null;int nSkipped=lastSkippedFrames;
-        List<Frame> bFrames=b!=null?decodeRoot(b):null;int bSkipped=lastSkippedFrames;
+        NBTTagCompound n=tryRead(nbtFile(slot));
+        List<Frame> nFrames=n!=null&&validStructure(n)?decodeRoot(n):null;int nSkipped=lastSkippedFrames;
+        if(nFrames!=null&&nSkipped==0)return n;
+        NBTTagCompound b=tryRead(bakFile(slot));
+        List<Frame> bFrames=b!=null&&validStructure(b)?decodeRoot(b):null;int bSkipped=lastSkippedFrames;
+        if(bFrames!=null&&bSkipped==0)return b;
         if(nFrames!=null&&(bFrames==null||nFrames.size()>bFrames.size()||(nFrames.size()==bFrames.size()&&nSkipped<=bSkipped)))return n;
         return b!=null?b:n;
     }

@@ -42,7 +42,7 @@ public final class Frame {
         public Builder onGround(boolean v){onGround=v;return this;} public Builder sneak(boolean v){sneak=v;return this;}
         public Builder sprint(boolean v){sprint=v;return this;} public Builder leftClick(boolean v){leftClick=v;return this;} public Builder rightClick(boolean v){rightClick=v;return this;} public Builder jump(boolean v){jump=v;return this;}
         public Builder moveForward(float v){moveForward=v;return this;} public Builder moveStrafe(float v){moveStrafe=v;return this;}
-        public Builder guiClick(boolean v){guiClick=v;return this;}public Builder guiX(float v){guiX=v;return this;}public Builder guiY(float v){guiY=v;return this;}public Builder guiScreen(String v){guiScreen=v;return this;}
+        public Builder guiClick(boolean v){guiClick=v;return this;}public Builder guiX(float v){guiX=v;return this;}public Builder guiY(float v){guiY=v;return this;}public Builder guiScreen(String v){guiScreen=v!=null&&v.length()>160?v.substring(0,160):v;return this;}
         public Builder chatMessage(String v){chatMessage=v;return this;} public Builder tickIndex(long v){tickIndex=v;return this;}
         public Builder keyMask(int v){keyMask=v;hasKeyMask=true;return this;} public Builder hotbarSlot(int v){hotbarSlot=v<-1?-1:(v>8?8:v);return this;}
         public Builder dYaw(float v){dYaw=v;return this;} public Builder dPitch(float v){dPitch=v;return this;}

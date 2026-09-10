@@ -5,14 +5,14 @@ public class GuiMirrorSlotTools extends GuiScreen{
 
     private static final int EDIT=1,DUP=2,EXPORT=3,IMPORT=4,BACK=5,DELETE=6;
     private final GuiMirrorMain parent;private final RecorderManager manager;private final RecorderConfig config;private final int slot;
-    private int wx,wy,ww,wh,headH,padX,innerW,infoY,infoH,pathY,pathH;private boolean hasExportsCache=false;
+    private int wx,wy,ww,wh,headH,padX,innerW,infoY,infoH,pathY,pathH;private boolean hasExportsCache=false;private int lastFilled=-1;
     private StyledButton edit,dup,export,imp,delete;
     public GuiMirrorSlotTools(GuiMirrorMain p,RecorderManager m,RecorderConfig c,int s){parent=p;manager=m;config=c;slot=s;}
     private String s(String ru,String en,String uk,String de,String pl){return Lang.s(ru,en,uk,de,pl);}
     private String[] tt(String ru,String en,String uk,String de,String pl){return Lang.s(ru,en,uk,de,pl).split("\n");}
 
     @Override public void initGui(){
-        buttonList.clear();hasExportsCache=!manager.getExportFiles().isEmpty();
+        buttonList.clear();hasExportsCache=!manager.getExportFiles().isEmpty();lastFilled=-1;
         ww=Math.min(width-16,470);wh=Math.min(height-10,318);wx=(width-ww)/2;wy=(height-wh)/2;
         headH=Math.min(34,Math.max(26,wh/9));padX=12;innerW=ww-padX*2;
         int x=wx+padX,half=(innerW-6)/2;
@@ -45,6 +45,7 @@ public class GuiMirrorSlotTools extends GuiScreen{
         boolean ready=!manager.isBusy(),filled=manager.getSlotFrameCount(slot)>0,hasExports=hasExportsCache;
         edit.enabled=ready&&filled;dup.enabled=ready&&filled;export.enabled=ready&&filled;
         imp.enabled=ready&&!filled&&hasExports;delete.enabled=ready&&filled&&!manager.isSlotBusy(slot);
+        int filledKey=(filled?1:0)|(ready?2:0)|(hasExports?4:0);if(filledKey==lastFilled)return;lastFilled=filledKey;
         edit.tooltip=filled?tt("§fИзменить\n§7Дать записи имя и короткое описание.\n§8Так проще найти её в списке.","§fRename\n§7Give the recording a name and a short description.\n§8That makes it easier to find in the list.","§fЗмінити\n§7Дати запису ім'я та короткий опис.\n§8Так легше знайти його у списку.","§fUmbenennen\n§7Gib der Aufnahme einen Namen und eine kurze Beschreibung.\n§8So findest du sie leichter in der Liste.","§fZmień\n§7Nadaj nagraniu nazwę i krótki opis.\n§8Tak łatwiej je znaleźć na liście.")
             :tt("§fИзменить\n§cСначала нужно что-то записать в этот слот.","§fRename\n§cRecord something into this slot first.","§fЗмінити\n§cСпочатку треба щось записати в цей слот.","§fUmbenennen\n§cNimm zuerst etwas in diesem Slot auf.","§fZmień\n§cNajpierw nagraj coś w tym slocie.");
         dup.tooltip=filled?tt("§fДублировать\n§7Сделает такую же запись в свободном слоте.\n§7Удобно, если хотите что-то поменять, но оригинал сохранить.\n§8Оригинал останется на месте.","§fDuplicate\n§7Makes the same recording in a free slot.\n§7Handy when you want to change something but keep the original.\n§8The original stays where it is.","§fДублювати\n§7Зробить такий самий запис у вільному слоті.\n§7Зручно, якщо хочете щось змінити, але оригінал зберегти.\n§8Оригінал залишиться на місці.","§fDuplizieren\n§7Erstellt dieselbe Aufnahme in einem freien Slot.\n§7Praktisch, wenn du etwas ändern, aber das Original behalten willst.\n§8Das Original bleibt, wo es ist.","§fDuplikuj\n§7Tworzy takie samo nagranie w wolnym slocie.\n§7Wygodne, gdy chcesz coś zmienić, ale zachować oryginał.\n§8Oryginał zostaje na miejscu.")

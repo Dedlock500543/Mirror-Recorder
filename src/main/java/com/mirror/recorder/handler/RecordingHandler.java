@@ -635,7 +635,7 @@ public class RecordingHandler {
         if(!config.isRecordAllKeys()||keyLog.isEmpty())return null;
         int cap=Frame.MAX_KEY_EVENTS*2;int[] out=new int[cap];int n=0;
         while(!keyLog.isEmpty()&&n<cap-1){int[] e=keyLog.poll();if(e==null)continue;out[n++]=e[0];out[n++]=e[1];}
-        keyLog.clear();
+        if(!keyLog.isEmpty()){MirrorDebug.log("INPUT","key event overflow: "+keyLog.size()+" events dropped");keyLog.clear();}
         if(n==0)return null;
         int[] exact=new int[n];System.arraycopy(out,0,exact,0,n);return exact;
     }

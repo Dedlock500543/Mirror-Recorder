@@ -98,7 +98,7 @@ public class GuiMirrorTrash extends GuiScreen{
             String restoreLabel=selected>=0?s("Вернуть в слот ","Restore to slot ","Повернути в слот ","Wiederherstellen in Slot ","Przywróć do slotu ")+slots[selected]:s("Сначала выберите запись","Select a recording first","Спочатку виберіть запис","Wähle zuerst eine Aufnahme","Najpierw wybierz nagranie");
             StyledButton restore=new StyledButton(RESTORE,x,mainY,restoreW,20,restoreLabel).primary().accent(UiTheme.GREEN)
                 .tip(s("§fВернуть запись","§fRestore recording","§fПовернути запис","§fAufnahme wiederherstellen","§fPrzywróć nagranie"),s("§7Положит копию обратно в её слот. Слот должен быть пустым.","§7Puts the copy back into its own slot. The slot must be empty.","§7Покладе копію назад у її слот. Слот має бути порожнім.","§7Legt die Kopie zurück in ihren Slot. Der Slot muss leer sein.","§7Odłoży kopię z powrotem do jej slotu. Slot musi być pusty."));
-            restore.enabled=selected>=0&&selected<files.size();buttonList.add(restore);
+            restore.enabled=selected>=0&&selected<files.size()&&slots[selected]>=1;buttonList.add(restore);
             if(selected>=0){
                 StyledButton del=new StyledButton(DELETE,x+restoreW+gap,mainY,w-restoreW-gap,20,s("Удалить","Delete","Видалити","Löschen","Usuń"))
                     .accent(UiTheme.RED).tip(s("§fУдалить навсегда","§fDelete forever","§fВидалити назавжди","§fEndgültig löschen","§fUsuń na zawsze"),s("§cЭта копия исчезнет без возврата.","§cThis copy disappears for good.","§cЦя копія зникне безповоротно.","§cDiese Kopie verschwindet für immer.","§cTa kopia zniknie bezpowrotnie."));
@@ -150,7 +150,8 @@ public class GuiMirrorTrash extends GuiScreen{
         if(b.id==UNDO){
             int slot=manager.undoLastDelete();
             if(slot>0)setNotice(s("§aВернули последнюю запись в слот ","§aRestored the last recording into slot ","§aПовернули останній запис у слот ","§aLetzte Aufnahme wiederhergestellt in Slot ","§aPrzywrócono ostatnie nagranie do slotu ")+slot,UiTheme.GREEN);
-            else setNotice(s("§cСлот занят или мод сейчас работает","§cThe slot is taken or the mod is busy","§cСлот зайнятий або мод зараз працює","§cDer Slot ist belegt oder die Mod arbeitet gerade","§cSlot jest zajęty albo mod teraz pracuje"),UiTheme.RED);
+            else if(manager.isBusy())setNotice(s("§cПодождите: мод сейчас работает","§cPlease wait: the mod is busy","§cЗачекайте: мод зараз працює","§cBitte warten: Die Mod arbeitet gerade","§cPoczekaj: mod teraz pracuje"),UiTheme.RED);
+            else setNotice(s("§cФайл повреждён или слот занят","§cFile is damaged or the slot is taken","§cФайл пошкоджено або слот зайнятий","§cDatei beschädigt oder Slot belegt","§cPlik uszkodzony lub slot zajęty"),UiTheme.RED);
             selected=-1;reload();return;
         }
         if(b.id==CLEAR&&!confirmClear){confirmClear=true;setNotice(s("§eЕщё раз — и все копии исчезнут","§eClick again to delete every copy","§eЩе раз — і всі копії зникнуть","§eNochmal klicken, um jede Kopie zu löschen","§eJeszcze raz — i wszystkie kopie znikną"),UiTheme.AMBER);build();return;}
@@ -163,9 +164,13 @@ public class GuiMirrorTrash extends GuiScreen{
         if(selected<0||selected>=files.size())return;
         String file=files.get(selected);
         if(b.id==RESTORE){
+            int origSlot=slots[selected];
+            if(origSlot<1){setNotice(s("§cНеизвестный слот исходной записи: файл не содержит метку слота","§cUnknown original slot: the file has no slot tag","§cНевідомий слот початкового запису: файл не містить мітки слота","§cUnbekannter Ursprungsslot: Die Datei enthält keinen Slot-Tag","§cNieznany oryginalny slot: plik nie zawiera tagu slotu"),UiTheme.RED);selected=-1;reload();return;}
+            if(manager.isBusy()){setNotice(s("§cПодождите: мод сейчас работает","§cPlease wait: the mod is busy","§cЗачекайте: мод зараз працює","§cBitte warten: Die Mod arbeitet gerade","§cPoczekaj: mod teraz pracuje"),UiTheme.RED);selected=-1;reload();return;}
+            if(manager.getSlotFrameCount(origSlot)>0){setNotice(s("§cСлот "+origSlot+" занят: удалите или перенесите запись","§cSlot "+origSlot+" is taken: delete or move the recording first","§cСлот "+origSlot+" зайнятий: видаліть або перенесіть запис","§cSlot "+origSlot+" ist belegt: Lösche oder verschiebe die Aufnahme zuerst","§cSlot "+origSlot+" jest zajęty: usuń lub przenieś nagranie"),UiTheme.RED);selected=-1;reload();return;}
             int slot=manager.restoreTrashToOwnSlot(file);
             if(slot>0)setNotice(s("§aЗапись вернулась в слот ","§aRecording restored into slot ","§aЗапис повернувся у слот ","§aAufnahme wiederhergestellt in Slot ","§aNagranie wróciło do slotu ")+slot,UiTheme.GREEN);
-            else setNotice(s("§cСлот занят или мод сейчас работает","§cThat slot is taken or the mod is busy","§cСлот зайнятий або мод зараз працює","§cDieser Slot ist belegt oder die Mod arbeitet gerade","§cTen slot jest zajęty albo mod teraz pracuje"),UiTheme.RED);
+            else setNotice(s("§cФайл повреждён: восстановление невозможно","§cFile is damaged: restoration is not possible","§cФайл пошкоджено: відновлення неможливе","§cDatei beschädigt: Wiederherstellung nicht möglich","§cPlik uszkodzony: przywrócenie niemożliwe"),UiTheme.RED);
             selected=-1;reload();return;
         }
         if(b.id==DELETE){

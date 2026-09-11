@@ -40,7 +40,7 @@ public class StorageManager{
         if(root==null)return false;
         int skipped=frames.size()-root.getTagList("Frames",Constants.NBT.TAG_COMPOUND).tagCount();
         if(skipped>0)LOG.warn("Slot {}: saved {}/{} frames ({} skipped)",slot,root.getTagList("Frames",Constants.NBT.TAG_COMPOUND).tagCount(),frames.size(),skipped);
-        return fileStore.writeAtomically(slot,root);}
+        boolean ok=fileStore.writeAtomically(slot,root);invalidateSummary(slot);return ok;}
     /** Порядок: целый .nbt → целый .bak → частично уцелевшие кадры. */
     public List<Frame> loadRecording(int slot){
         if(!validSlot(slot))return new ArrayList<Frame>();

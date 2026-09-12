@@ -81,8 +81,8 @@ public final class MirrorSelfTest{
         r.check("\u043f\u043e\u043b\u043d\u044b\u0439 \u043a\u0430\u0434\u0440 \u0447\u0435\u0440\u0435\u0437 NBT",diff==null,diff==null?"":diff);
         Frame empty=Frame.fromNBT(new NBTTagCompound(),false);
         r.check("\u043f\u0443\u0441\u0442\u043e\u0439 \u043a\u0430\u0434\u0440 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u0435\u043d",empty.clickSeq.length==0&&empty.guiKeys.length==0&&empty.tickIndex==0L&&empty.hotbarSlot==-1,"empty frame");
-        Frame edge=Frame.fromNBT(Frame.builder().tickIndex(TICKS_HOUR).keyMask(0).build().toNBT(),true);
-        r.check("\u043c\u0435\u0442\u043a\u0430 \u0432\u0440\u0435\u043c\u0435\u043d\u0438 72000 \u0438 \u043f\u0443\u0441\u0442\u0430\u044f \u043c\u0430\u0441\u043a\u0430",edge.tickIndex==TICKS_HOUR&&edge.hasKeyMask&&edge.keyMask==0,"tick="+edge.tickIndex+" mask="+edge.keyMask);
+        Frame edge=Frame.fromNBT(Frame.builder().tickIndex((long)com.mirror.recorder.storage.StorageManager.MAX_FRAMES-1).keyMask(0).build().toNBT(),true);
+        r.check("\u043c\u0435\u0442\u043a\u0430 \u0432\u0440\u0435\u043c\u0435\u043d\u0438 71999 \u0438 \u043f\u0443\u0441\u0442\u0430\u044f \u043c\u0430\u0441\u043a\u0430",edge.tickIndex==com.mirror.recorder.storage.StorageManager.MAX_FRAMES-1&&edge.hasKeyMask&&edge.keyMask==0,"tick="+edge.tickIndex+" mask="+edge.keyMask);
     }
     /** Сквозная проверка потока: ни одного потерянного, ни одного лишнего события, метки времени строго растут. */
     private static void eventStream(Result r){
@@ -134,7 +134,7 @@ public final class MirrorSelfTest{
             .guiClick(true).guiX(0.375f).guiY(0.625f).guiScreen("net.minecraft.client.gui.inventory.GuiChest")
             .guiCenter(true,-70,-30).guiShift(true).guiButton(2)
             .guiKeys(new int[]{1,42,3,2,-70,-30,0,17,119,0,0,0}).openScreen("net.minecraft.client.gui.inventory.GuiChest")
-            .screenState(true).dropAll(true).worldReset(true).chatMessage("/mirror ping").tickIndex(71999L).elytra(true).build();
+            .screenState(true).dropAll(true).worldReset(true).chatMessage("/mirror ping").tickIndex(71999L).keyEvents(new int[]{42,1,17,0,20,1}).cursor(true,320.5f,240.75f).target(true,100,64,-200,3,0.5f,0.75f,0.25f).elytra(true).build();
     }
     /** Синтетический кадр: клавиши, клики с порядком, действия окон и чат — детерминированно от seed. */
     private static Frame synthetic(int index,long seed){
@@ -166,6 +166,9 @@ public final class MirrorSelfTest{
         if(index%200==0)b.chatMessage("/mirror ping "+index);
         if(index==2500)b.worldReset(true);
         if(index%400==0)b.dropAll(true);
+        if(index%100==0)b.keyEvents(new int[]{(int)(seed&0xFF),1,(int)((seed>>8)&0xFF),0});
+        if(index%60==0)b.cursor(true,(float)(index%640),(float)(index%480));
+        if(index%250==0)b.target(true,(int)(seed%1000)-500,64+(int)(seed%10),(int)((seed>>16)%1000)-500,(int)(seed%6),0.5f,0.75f,0.25f);
         return b.build();
     }
     /** Сколько записанных событий несёт кадр: клики, действия окон и сообщение чата. */
@@ -191,6 +194,9 @@ public final class MirrorSelfTest{
         if(a.dropAll!=b.dropAll||a.worldReset!=b.worldReset)return "flags";
         if(!same(a.chatMessage,b.chatMessage))return "chat";
         if(a.tickIndex!=b.tickIndex)return "tick index "+a.tickIndex+" vs "+b.tickIndex;
+        if(!Arrays.equals(a.keyEvents,b.keyEvents))return "key events";
+        if(a.hasCursor!=b.hasCursor||(a.hasCursor&&(a.curX!=b.curX||a.curY!=b.curY)))return "cursor";
+        if(a.hasTarget!=b.hasTarget||(a.hasTarget&&(a.tgtX!=b.tgtX||a.tgtY!=b.tgtY||a.tgtZ!=b.tgtZ||a.tgtFace!=b.tgtFace||a.hitX!=b.hitX||a.hitY!=b.hitY||a.hitZ!=b.hitZ)))return "target";
         return null;
     }
     private static boolean same(String a,String b){

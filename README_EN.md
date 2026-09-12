@@ -1,140 +1,452 @@
 # Mirror Recorder
 
-GitHub: <https://github.com/Dedlock500543/Mirror-RecorderMod>
+**Mirror Recorder** is a client-side mod for **Minecraft 1.12.2 / Forge** that records player input and plays it back later.
 
-Download the project archive (ZIP): <https://github.com/Dedlock500543/Mirror-RecorderMod/archive/refs/heads/main.zip> —
-the file is saved as `Mirror-RecorderMod-main.zip`; the folder after unpacking is `Mirror-RecorderMod-main`.
+> 🎥 The mod replays **actual player input** instead of directly simulating movement or physics. This keeps playback tied to Minecraft's normal game mechanics.
 
-Русская версия: [README.md](README.md)
+**GitHub:** https://github.com/Dedlock500543/Mirror-RecorderMod
+**Download project (ZIP):** https://github.com/Dedlock500543/Mirror-RecorderMod/archive/refs/heads/main.zip
 
+GitHub saves the archive as `Mirror-RecorderMod-main.zip`. After extraction, the project folder is named `Mirror-RecorderMod-main`.
 
-
-A client-side mod for **Minecraft 1.12.2 / Forge 14.23.5.2864** that records player input
-(movement, camera, clicks, jumping, chat, hotbar slots) and plays it back.
-The mod does not run its own physics simulation — it replays the actual key presses,
-so playback stays consistent with the game mechanics.
-
-> The mod is **client-side only**. It must not be installed on a server.
+**Русская версия:** [`README.md`](README.md)
 
 ---
 
-## Requirements
+## ✨ Features
 
-| Component | Version |
-|---|---|
-| Minecraft | 1.12.2 |
-| Minecraft Forge | 14.23.5.2864 or newer in the 1.12.2 branch |
-| Java (game) | Java 8 |
-| Java (building from source) | **JDK 8** — ForgeGradle 3 does not work on JDK 9+ |
-| Baritone | optional, hooked via reflection |
-
----
-
-## Installation
-
-1. Install Minecraft Forge for 1.12.2.
-2. Put `Mirror-Recorder-1.12.2-1.0.0.jar` into the `mods` folder of your game directory.
-3. Launch the game.
-
-The paths below are relative to **your** game directory (`.minecraft` or the instance folder
-in MultiMC / Prism / CurseForge, etc.). The mod resolves them through Forge and writes nowhere else.
-
-| What | Where |
-|---|---|
-| Config | `config/mirror_recorder.cfg` |
-| Recordings | `mirror_recorder/slot_N.nbt` (`.bak` — backup, `.tmp` — temporary file) |
-| Export | `mirror_recorder/exports/*.mrr` |
-| Trash | `mirror_recorder/trash/` (up to 100 most recently deleted recordings) |
-| Diagnostics log | `logs/mirror-debug.log` (only when diagnostics are enabled) |
+* 🎬 Record and replay player input
+* 🕹️ Movement, camera rotation, clicks, jumping and hotbar slot switching
+* 💬 Chat and command recording/playback
+* 🔁 Single and looped playback
+* 🔢 Configurable loop limit
+* ⚡ Playback speed from **0.25× to 4×**
+* 🧭 Limited route stabilization using input only
+* 🏠 Automatic return to the starting point
+* 🤖 Optional **Baritone** integration
+* 📍 Route and start-point visualization
+* 🖥️ Playback status HUD
+* 💾 `.mrr` import/export
+* 📑 Slot duplication
+* 🗑️ Trash for deleted recordings
+* 🌍 Five interface languages
+* 🛑 Stop on damage
+* ⌨️ Stop on manual movement input
+* 🌎 Recordings can continue across world changes
+* 🧰 Playback of actions inside Minecraft GUIs
+* 💾 Partial recovery of damaged recordings
 
 ---
 
-## Controls
+## 🧩 Requirements
 
-Keys are **unbound by default** to avoid conflicts with other mods.
-Bind them in `Options → Controls → Mirror Recorder`, or simply use the commands.
-Key names are automatically translated into the game language.
+| Component         | Requirement                            |
+| ----------------- | -------------------------------------- |
+| Minecraft         | **1.12.2**                             |
+| Minecraft Forge   | **14.23.5.2864+** in the 1.12.2 branch |
+| Java for the game | **Java 8**                             |
+| Java for building | **JDK 8**                              |
+| Baritone          | Optional                               |
 
-| Command | Action |
-|---|---|
-| `/mirror gui` | open the mod's main window |
-| `/mirror record <slot>` | start recording |
-| `/mirror play <slot>` | play back once |
-| `/mirror loop <slot>` | play back in a loop |
-| `/mirror limit <slot> <N>` | limit the number of loops (`0` — no limit) |
-| `/mirror stop` | stop everything |
-| `/mirror list` | list occupied slots |
-| `/mirror name <slot> <name>` | rename a recording |
-| `/mirror delete <slot>` | delete a recording (goes to trash) |
-| `/mirror marker <slot> [text]` | set the recording description |
-
-100 slots are available, up to 72,000 frames per slot (1 hour at 20 TPS).
+> ⚠️ **ForgeGradle 3 requires JDK 8.** Building with JDK 9+ is not supported and will fail with a clear error message.
 
 ---
 
-## Features
+## 📦 Installation
 
-- Input recording and playback without changing the physics.
-- Loop playback with a loop limit and no delay between loops.
-- Playback speed 0.25×–4×. Presses from skipped frames are replayed in the same order; the camera angle is taken from the last frame of the step. Route stabilization works only at 1.0× speed.
-- Bounded route stabilization — input only, no teleports.
-- Auto-return to the start point (optionally via Baritone, if installed).
-- Route visualization and start marker (dot / ring / beacon), configurable color.
-- Status HUD; inside the mod windows it is moved with **Shift + mouse drag**, so a plain click always reaches the buttons underneath.
-- Import/export recordings as `.mrr`, slot duplication, trash.
-- Interface languages: Russian, English, Ukrainian, German, Polish. By default the language follows the game language (`auto`); a manual override is available in `Settings → Interface → Language`. Keybind names in the Controls screen are translated by the game itself according to the game language (not the mod language), and the category name there is always `Mirror Recorder` — it is not translated.
-- Stops when the player takes damage (configurable) and on manual movement input — W, A, S, D or the space bar.
+1. Install **Minecraft Forge 1.12.2**.
+2. Put `Mirror-Recorder-1.12.2-1.0.0.jar` into your `mods` folder.
+3. Launch Minecraft.
+
+Mirror Recorder is **client-side only**.
+
+> **Do not install Mirror Recorder on a server.** No server installation is required or supported.
 
 ---
 
-## Building from source
+## 📁 File Locations
 
-You need **JDK 8**. The build checks this itself and fails with a clear message on JDK 9+.
+All paths below are relative to the game directory:
+
+* `.minecraft`
+* a MultiMC / Prism Launcher instance directory
+* CurseForge or another launcher instance directory
+
+The mod obtains the game directory through Forge and does not write to unrelated locations.
+
+| Purpose         | Path                             |
+| --------------- | -------------------------------- |
+| Configuration   | `config/mirror_recorder.cfg`     |
+| Recordings      | `mirror_recorder/slot_N.nbt`     |
+| Backups         | `mirror_recorder/slot_N.nbt.bak` |
+| Temporary files | `mirror_recorder/slot_N.nbt.tmp` |
+| Exports         | `mirror_recorder/exports/*.mrr`  |
+| Trash           | `mirror_recorder/trash/`         |
+| Diagnostic log  | `logs/mirror-debug.log`          |
+
+The trash keeps up to **100 recently deleted recordings**.
+
+---
+
+## 🎮 Controls
+
+Mirror Recorder key bindings are **unassigned by default** to avoid conflicts with other mods.
+
+Configure them in:
+
+**Options → Controls → Mirror Recorder**
+
+The main functions are also available through commands.
+
+| Command                        | Action                      |
+| ------------------------------ | --------------------------- |
+| `/mirror gui`                  | Open the main GUI           |
+| `/mirror record <slot>`        | Start recording             |
+| `/mirror play <slot>`          | Play a recording once       |
+| `/mirror loop <slot>`          | Start looped playback       |
+| `/mirror limit <slot> <N>`     | Set the loop count          |
+| `/mirror stop`                 | Stop recording/playback     |
+| `/mirror list`                 | List occupied slots         |
+| `/mirror name <slot> <name>`   | Rename a recording          |
+| `/mirror delete <slot>`        | Delete a recording          |
+| `/mirror marker <slot> [text]` | Set a recording description |
+
+### Slots
+
+* **100 slots**
+* Up to **72,000 frames per slot**
+* At 20 TPS, this is approximately **1 hour of recording per slot**
+
+---
+
+## 🎥 Recording & Playback
+
+Mirror Recorder records player actions and replays them in the same order.
+
+Recorded input may include:
+
+* movement;
+* camera rotation;
+* clicks;
+* jumping;
+* hotbar slot switching;
+* chat;
+* commands;
+* actions inside Minecraft GUIs.
+
+The mod **does not teleport the player** and does not replace Minecraft's physics with its own simulation.
+
+### Playback Speed
+
+Supported speeds:
+
+**0.25× → 4×**
+
+When frames are skipped:
+
+* input actions are replayed in their original order;
+* camera rotation uses the latest frame for the corresponding tick.
+
+> 🧭 Route stabilization is available only at **1.0×** playback speed.
+
+---
+
+## 🧭 Route Stabilization
+
+Mirror Recorder provides limited route stabilization.
+
+It works **through normal player input only** and does not use teleportation or direct coordinate manipulation.
+
+This allows small deviations to be corrected while preserving normal game mechanics.
+
+---
+
+## 🏠 Automatic Return
+
+After playback finishes, the mod can automatically return the player to the starting point.
+
+Two modes are available:
+
+* local alignment;
+* **Baritone**, when installed.
+
+Baritone is **not a required dependency** and is accessed through reflection.
+
+---
+
+## 📍 Route & Start Point Visualization
+
+The mod can visualize the recorded route and starting point.
+
+The start point can be displayed as:
+
+* a point;
+* a ring;
+* a beam.
+
+The visualization color can be configured.
+
+---
+
+## 🖥️ HUD
+
+The HUD displays the current recording or playback status.
+
+Inside Mirror Recorder GUIs, it can be moved with:
+
+**Shift + mouse drag**
+
+Without `Shift`, clicks are passed to the interface buttons underneath the HUD.
+
+---
+
+## 🌎 World Changes
+
+Recordings can continue across world changes.
+
+For example:
+
+**lobby → portal → game world**
+
+The entire sequence is stored in a single recording.
+
+During playback, the world transition must happen **normally**, just as it did during recording:
+
+* through a portal;
+* through a game interface;
+* through a command;
+* or through another normal in-game mechanism.
+
+Once the new world has finished loading, playback continues.
+
+---
+
+## 🧰 Minecraft GUIs
+
+Mirror Recorder records actions performed inside Minecraft interfaces.
+
+Examples include:
+
+* dropping items;
+* moving items with number keys;
+* closing windows with keys;
+* entering text into anvils;
+* entering text into signs;
+* interacting with chests;
+* interacting with crafting tables;
+* other GUI clicks.
+
+### Important
+
+Container clicks are replayed using the **recorded cursor position** and only inside a GUI of the same type.
+
+The mod does not inspect the container contents.
+
+Therefore, if items are located in different slots than during the original recording, the same click may interact with a different item.
+
+### Clipboard
+
+`Ctrl` shortcuts inside text fields are not reproduced.
+
+For example, pasting text from the system clipboard is not stored as part of the recording.
+
+---
+
+## 💬 Chat & Commands
+
+Chat playback sends **real messages and commands** to the server.
+
+> ⚠️ On public servers, automated input may be prohibited by server rules.
+
+### Chat Recording
+
+Chat recording is **disabled by default**.
+
+This prevents recordings from accidentally storing:
+
+* private messages;
+* passwords;
+* other sensitive information.
+
+It can be enabled in:
+
+**Settings → Recording**
+
+### Imported Recordings
+
+Chat messages and commands from **imported `.mrr` recordings are never sent**.
+
+This prevents an imported recording from:
+
+* sending messages in chat;
+* executing commands on your behalf.
+
+When such a frame is encountered for the first time, the mod displays a warning in chat.
+
+> Your own recordings continue to work normally.
+
+---
+
+## 🛑 Stop Conditions
+
+Playback can be configured to stop automatically when:
+
+* the player takes damage;
+* `W` is pressed manually;
+* `A` is pressed;
+* `S` is pressed;
+* `D` is pressed;
+* `Space` is pressed.
+
+These settings are available under:
+
+**Settings → Recording**
+
+---
+
+## 🌐 Languages
+
+The interface supports:
+
+* 🇷🇺 Russian
+* 🇬🇧 English
+* 🇺🇦 Ukrainian
+* 🇩🇪 German
+* 🇵🇱 Polish
+
+By default, **Auto** follows the Minecraft language setting.
+
+The language can also be selected manually in:
+
+**Settings → Interface → Language**
+
+### Control Names
+
+Key names in the **Controls** menu are translated by Minecraft itself and therefore depend on the Minecraft language.
+
+The section name **Mirror Recorder** always remains unchanged.
+
+---
+
+## 💾 Import & Export
+
+Recordings can be:
+
+* exported to `.mrr`;
+* imported from `.mrr`;
+* duplicated between slots;
+* moved to the trash when deleted.
+
+---
+
+## 🩹 Damaged Recordings
+
+A damaged recording does not necessarily become completely unusable.
+
+Mirror Recorder attempts to load it partially:
+
+* corrupted frames are skipped;
+* valid frames continue to play;
+* the diagnostic log records how many frames were lost.
+
+This allows as much of the recording as possible to be recovered.
+
+---
+
+## 🔨 Building from Source
+
+Building requires **JDK 8**.
+
+### Windows
 
 ```bat
-set "JAVA_HOME=<path-to-your-JDK-8>"
+set "JAVA_HOME=<path-to-your-jdk8>"
 gradlew.bat --no-daemon build
 ```
 
-```sh
+### Linux / macOS
+
+```bash
 export JAVA_HOME=<path-to-your-jdk8>
 ./gradlew --no-daemon build
 ```
 
-Result: `build/libs/Mirror-Recorder-1.12.2-1.0.0.jar` (already reobfuscated, `jar.finalizedBy('reobfJar')`).
+The resulting JAR is:
 
-Run the client for testing: `gradlew runClient` (working directory `run/`).
-Build environment summary: `gradlew modInfo`.
+```text
+build/libs/Mirror-Recorder-1.12.2-1.0.0.jar
+```
 
-When changing the version, update it in three places:
+The JAR is already reobfuscated:
 
-1. `build.gradle` → `version`
-2. `src/main/resources/mcmod.info` → `"version"`
-3. `src/main/java/com/mirror/recorder/MirrorRecorder.java` → `VERSION`
+```gradle
+jar.finalizedBy('reobfJar')
+```
 
----
+### Launch the Client
 
-## Good to know
+To test the project:
 
-- Recording survives world transfers (lobby → game): everything goes into one file, and playback waits for the new world and continues. The transfer itself must replay for real — the recorded walk into the portal, menu click or command.
-- Keys pressed inside windows are recorded too: dropping items, hotbar-number swaps, closing the window with a key, typing on anvils and signs. Ctrl combos in text fields (clipboard paste) are not replayed — this is a known limitation.
-- Recordings made with this version remember the open screen: during playback a shop or chest window closes where it closed while recording. Older recordings also close it, but based on recorded clicks, so within about half a second.
-- If the mod keybinds in Controls were corrupted by an earlier version, set them once more and they will persist from now on.
-- Chat playback sends **real** messages and commands to the server.
-  On public servers, mind the rules — input automation may be forbidden.
-- Chat recording is **off by default**, so private messages and passwords
-  don't end up in recording files. Enable it in `Settings → Recording`.
-- Baritone is not a dependency: without it, auto-return works in a simplified
-  local alignment mode.
-- Chat and commands from **imported** recordings are never sent: a foreign `.mrr` cannot
-  talk or run commands on your behalf. The mod says so in chat on the first such frame.
-  Your own recordings behave as before.
-- Clicks inside game windows (chests, crafting tables) are replayed at the recorded cursor
-  position and only in a window of the same type. The mod does not inspect container contents,
-  so if the items are arranged differently than during recording, the click lands on another slot.
-- A damaged recording now loads partially: broken frames are skipped, the rest is replayed,
-  and the number of lost frames is written to `logs/`.
+```bash
+gradlew runClient
+```
+
+The working directory is:
+
+```text
+run/
+```
+
+### Build Environment Information
+
+```bash
+gradlew modInfo
+```
 
 ---
 
-Author: **ToTcamii** (einprinz7@gmail.com) · <https://github.com/Dedlock500543/Mirror-RecorderMod>
+## 🔢 Version
+
+When changing the mod version, update it in all three locations:
+
+```text
+build.gradle
+src/main/resources/mcmod.info
+src/main/java/com/mirror/recorder/MirrorRecorder.java
+```
+
+Specifically:
+
+```text
+build.gradle → version
+mcmod.info → "version"
+MirrorRecorder.java → VERSION
+```
+
+---
+
+## ⚠️ Important Limitations
+
+Mirror Recorder replays **input**, not a predetermined result.
+
+Playback may therefore behave differently when the game state differs from the state during the original recording.
+
+For example:
+
+* container contents have changed;
+* objects are in different positions;
+* the world state is different;
+* loading or timing conditions changed;
+* the GUI is different from the original state.
+
+This is especially important for container interactions: the mod replays the recorded cursor position but does not verify which item is currently located there.
+
+---
+
+## 📜 License
+
+See the project repository and license file included with the source code.
+
+---
+
+**Mirror Recorder** — record, save, and replay real player input in Minecraft 1.12.2.

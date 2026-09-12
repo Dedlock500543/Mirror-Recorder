@@ -2,7 +2,10 @@
 
 GitHub: <https://github.com/Dedlock500543/Mirror-Recorder>
 
-Русская версия: [README.md](README.md)
+Download the project archive (ZIP): <https://github.com/Dedlock500543/Mirror-Recorder/archive/refs/heads/main.zip> —
+the file is saved as `Mirror-RecorderMod-main.zip`; the folder after unpacking is `Mirror-RecorderMod-main`.
+
+Русская версия: [README_RU.md](README_RU.md)
 
 
 
@@ -133,11 +136,5 @@ When changing the version, update it in three places:
   and the number of lost frames is written to `logs/`.
 
 ---
-
-## License
-
-The mod's code is distributed under the GNU GPL v3.0 license (see `LICENSE.txt`).
-Minecraft Forge and MCP remain the property of their respective authors
-and are used only as external build dependencies.
 
 Author: **ToTcamii** (einprinz7@gmail.com) · <https://github.com/Dedlock500543/Mirror-Recorder>

@@ -1,6 +1,6 @@
 Mirror Recorder — client-side input recorder and replayer for Minecraft 1.12.2 (Forge)
 Copyright (C) 2026 ToTcamii (einprinz7@gmail.com)
-https://github.com/Dedlock500543/Mirror-Recorder
+https://github.com/Dedlock500543/Mirror-RecorderMod
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

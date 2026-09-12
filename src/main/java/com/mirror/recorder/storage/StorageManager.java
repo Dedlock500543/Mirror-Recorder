@@ -82,11 +82,11 @@ public class StorageManager{
         if(!validSlot(source)||!validSlot(target)||source==target||peekFrameCount(target)>0)return false;
         NBTTagCompound r=readStructuralRoot(source);if(r==null)return false;
         String sourceName=codec.clean(r.getString("SlotName"),40);
-        if(sourceName.isEmpty()){r.setString("SlotName",codec.clean(emptyLabel,40));return fileStore.writeAtomically(target,r);}
+        if(sourceName.isEmpty()){r.setString("SlotName",codec.clean(emptyLabel,40));boolean ok=fileStore.writeAtomically(target,r);if(ok)invalidateSummary(target);return ok;}
         String suffix=copySuffix==null?"":copySuffix;String base=sourceName;
         while(!suffix.isEmpty()&&base.endsWith(suffix))base=base.substring(0,base.length()-suffix.length()).trim();
         if(base.length()+suffix.length()>40)base=base.substring(0,Math.max(0,40-suffix.length())).trim();
-        r.setString("SlotName",base+suffix);return fileStore.writeAtomically(target,r);}
+        r.setString("SlotName",base+suffix);boolean ok=fileStore.writeAtomically(target,r);if(ok)invalidateSummary(target);return ok;}
     // === Экспорт и импорт ===
     public String exportRecording(int slot){
         NBTTagCompound r=readStructuralRoot(slot);if(r==null)return null;
@@ -107,7 +107,7 @@ public class StorageManager{
         if(!codec.validRoot(r))return false;
         r.setInteger("Version",Math.max(1,Math.min(FORMAT_VERSION,r.hasKey("Version")?r.getInteger("Version"):2)));
         r.setInteger("FrameCount",r.getTagList("Frames",Constants.NBT.TAG_COMPOUND).tagCount());
-        r.setBoolean("Imported",true);return fileStore.writeAtomically(slot,r);}
+        r.setBoolean("Imported",true);boolean ok=fileStore.writeAtomically(slot,r);if(ok)invalidateSummary(slot);return ok;}
     // === Файловая информация ===
     public long getLastModified(int slot){if(!validSlot(slot))return 0L;File f=fileStore.nbtFile(slot);if(!f.isFile())f=fileStore.bakFile(slot);return f.isFile()?f.lastModified():0L;}
     public long getFileSize(int slot){if(!validSlot(slot))return 0L;File f=fileStore.nbtFile(slot);if(!f.isFile())f=fileStore.bakFile(slot);return f.isFile()?f.length():0L;}

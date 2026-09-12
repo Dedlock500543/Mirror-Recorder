@@ -4,7 +4,7 @@
   "description": "Records and replays player input without a custom physics simulation. Optional Baritone integration returns the player to the recording start. Client side only.",
   "version": "1.0.0",
   "mcversion": "1.12.2",
-  "url": "https://github.com/Dedlock500543/Mirror-Recorder",
+  "url": "https://github.com/Dedlock500543/Mirror-RecorderMod",
   "updateUrl": "",
   "authorList": [
     "ToTcamii"

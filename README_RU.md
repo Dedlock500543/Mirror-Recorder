@@ -1,8 +1,8 @@
 # Mirror Recorder
 
-GitHub: <https://github.com/Dedlock500543/Mirror-Recorder>
+GitHub: <https://github.com/Dedlock500543/Mirror-RecorderMod>
 
-Скачать архив проекта (ZIP): <https://github.com/Dedlock500543/Mirror-Recorder/archive/refs/heads/main.zip> —
+Скачать архив проекта (ZIP): <https://github.com/Dedlock500543/Mirror-RecorderMod/archive/refs/heads/main.zip> —
 файл сохраняется как `Mirror-RecorderMod-main.zip`, папка после распаковки — `Mirror-RecorderMod-main`.
 
 English version: [README_EN.md](README_EN.md)

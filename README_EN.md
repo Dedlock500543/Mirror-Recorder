@@ -4,7 +4,7 @@ GitHub: <https://github.com/Dedlock500543/Mirror-Recorder>
 
 Русская версия: [README.md](README.md)
 
-Changelog: [CHANGELOG.md](CHANGELOG.md)
+
 
 A client-side mod for **Minecraft 1.12.2 / Forge 14.23.5.2864** that records player input
 (movement, camera, clicks, jumping, chat, hotbar slots) and plays it back.
@@ -30,7 +30,7 @@ so playback stays consistent with the game mechanics.
 ## Installation
 
 1. Install Minecraft Forge for 1.12.2.
-2. Put `Mirror-Recorder-1.12.2-1.0.1.jar` into the `mods` folder of your game directory.
+2. Put `Mirror-Recorder-1.12.2-1.0.0.jar` into the `mods` folder of your game directory.
 3. Launch the game.
 
 The paths below are relative to **your** game directory (`.minecraft` or the instance folder
@@ -41,7 +41,7 @@ in MultiMC / Prism / CurseForge, etc.). The mod resolves them through Forge and 
 | Config | `config/mirror_recorder.cfg` |
 | Recordings | `mirror_recorder/slot_N.nbt` (`.bak` — backup, `.tmp` — temporary file) |
 | Export | `mirror_recorder/exports/*.mrr` |
-| Trash | `mirror_recorder/trash/` (up to 20 most recently deleted recordings) |
+| Trash | `mirror_recorder/trash/` (up to 100 most recently deleted recordings) |
 | Diagnostics log | `logs/mirror-debug.log` (only when diagnostics are enabled) |
 
 ---
@@ -98,7 +98,7 @@ export JAVA_HOME=<path-to-your-jdk8>
 ./gradlew --no-daemon build
 ```
 
-Result: `build/libs/Mirror-Recorder-1.12.2-1.0.1.jar` (already reobfuscated, `jar.finalizedBy('reobfJar')`).
+Result: `build/libs/Mirror-Recorder-1.12.2-1.0.0.jar` (already reobfuscated, `jar.finalizedBy('reobfJar')`).
 
 Run the client for testing: `gradlew runClient` (working directory `run/`).
 Build environment summary: `gradlew modInfo`.

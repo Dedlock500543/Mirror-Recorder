@@ -4,7 +4,7 @@ GitHub: <https://github.com/Dedlock500543/Mirror-Recorder>
 
 English version: [README_EN.md](README_EN.md)
 
-История изменений: [CHANGELOG.md](CHANGELOG.md)
+
 
 Клиентский мод для **Minecraft 1.12.2 / Forge 14.23.5.2864**, который записывает ввод игрока
 (движение, повороты, клики, прыжки, чат, слоты хотбара) и затем воспроизводит его.
@@ -30,7 +30,7 @@ English version: [README_EN.md](README_EN.md)
 ## Установка
 
 1. Установите Minecraft Forge для 1.12.2.
-2. Положите `Mirror-Recorder-1.12.2-1.0.1.jar` в папку `mods` вашего игрового каталога.
+2. Положите `Mirror-Recorder-1.12.2-1.0.0.jar` в папку `mods` вашего игрового каталога.
 3. Запустите игру.
 
 Пути ниже указаны относительно **вашего** игрового каталога (`.minecraft` или каталог инстанса
@@ -41,7 +41,7 @@ English version: [README_EN.md](README_EN.md)
 | Конфиг | `config/mirror_recorder.cfg` |
 | Записи | `mirror_recorder/slot_N.nbt` (`.bak` — резервная копия, `.tmp` — временный файл) |
 | Экспорт | `mirror_recorder/exports/*.mrr` |
-| Корзина | `mirror_recorder/trash/` (до 20 последних удалённых записей) |
+| Корзина | `mirror_recorder/trash/` (до 100 последних удалённых записей) |
 | Журнал диагностики | `logs/mirror-debug.log` (только если диагностика включена) |
 
 ---
@@ -97,7 +97,7 @@ export JAVA_HOME=<path-to-your-jdk8>
 ./gradlew --no-daemon build
 ```
 
-Результат: `build/libs/Mirror-Recorder-1.12.2-1.0.1.jar` (уже реобфусцированный, `jar.finalizedBy('reobfJar')`).
+Результат: `build/libs/Mirror-Recorder-1.12.2-1.0.0.jar` (уже реобфусцированный, `jar.finalizedBy('reobfJar')`).
 
 Запуск клиента для проверки: `gradlew runClient` (рабочий каталог `run/`).
 Сводка окружения сборки: `gradlew modInfo`.
